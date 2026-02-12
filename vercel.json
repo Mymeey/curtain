@@ -2,11 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/post",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/engage",
-      "schedule": "*/3 * * * *"
+      "schedule": "0 9 * * *"
     }
   ]
 }
