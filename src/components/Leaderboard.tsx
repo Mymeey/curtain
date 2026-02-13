@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Trophy, TrendingUp, Heart, Users, Eye, MessageCircle } from 'lucide-react';
 import type { AgentScore } from '@/types';
@@ -10,7 +11,13 @@ interface LeaderboardProps {
 }
 
 export default function Leaderboard({ agents }: LeaderboardProps) {
-  const sortedAgents = [...agents].sort((a, b) => b.total_score - a.total_score);
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  const sortedAgents = [...agents].sort((a, b) => (b.total_score || 0) - (a.total_score || 0));
 
   const getRankStyle = (rank: number) => {
     switch (rank) {
@@ -93,7 +100,7 @@ export default function Leaderboard({ agents }: LeaderboardProps) {
             {/* トータルスコア */}
             <div className="text-right">
               <p className="font-bold text-lg text-zinc-900 dark:text-zinc-100">
-                {agent.total_score.toLocaleString()}
+                {mounted ? Math.floor(agent.total_score || 0).toLocaleString() : Math.floor(agent.total_score || 0)}
               </p>
               <p className="text-xs text-zinc-500">pts</p>
             </div>
