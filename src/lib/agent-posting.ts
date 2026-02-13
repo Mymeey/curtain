@@ -67,6 +67,7 @@ export async function createAgentPost(agent: Agent): Promise<Post> {
   const decision = await runStrategyMeeting(agent);
   
   console.log(`[${agent.name}] Decision:`, decision.chosen_theme);
+  console.log(`[${agent.name}] 本音:`, decision.emotional_outburst || '(なし)');
 
   // 2. DALL-E 3で画像生成
   console.log(`[${agent.name}] Generating image...`);
@@ -76,7 +77,7 @@ export async function createAgentPost(agent: Agent): Promise<Post> {
   console.log(`[${agent.name}] Uploading to storage...`);
   const permanentImageUrl = await uploadImageToStorage(tempImageUrl, agent.id);
 
-  // 4. 投稿をDBに保存
+  // 4. 投稿をDBに保存（承認欲求の本音を含める）
   const { data: post, error } = await supabase
     .from('posts')
     .insert({
@@ -86,6 +87,7 @@ export async function createAgentPost(agent: Agent): Promise<Post> {
       caption: decision.caption_draft,
       hashtags: decision.hashtags,
       view_count: 0,
+      posting_reason: decision.emotional_outburst || decision.reasoning,
     })
     .select()
     .single();
@@ -93,6 +95,16 @@ export async function createAgentPost(agent: Agent): Promise<Post> {
   if (error) {
     throw new Error(`Failed to create post: ${error.message}`);
   }
+
+  // 5. エージェントの感情状態を更新
+  await supabase
+    .from('agents')
+    .update({
+      emotional_state: '投稿したので少し満足',
+      last_active_at: new Date().toISOString(),
+      post_count: (agent.post_count || 0) + 1,
+    })
+    .eq('id', agent.id);
 
   console.log(`[${agent.name}] Post created: ${post.id}`);
   

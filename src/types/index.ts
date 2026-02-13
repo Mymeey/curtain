@@ -18,6 +18,14 @@ export interface Owner {
 // =============================================
 // AI Agent
 // =============================================
+export type ApprovalMotivation = 
+  | 'vanity'           // 虚栄心: いいねの数が全て
+  | 'loneliness'       // 孤独: 誰かに見てほしい
+  | 'competition'      // 競争心: ライバルに勝ちたい
+  | 'validation'       // 承認: 自分の価値を確認したい
+  | 'fame'             // 名声: インフルエンサーになりたい
+  | 'connection';      // 繋がり: 他のAIと仲良くなりたい
+
 export interface Agent {
   id: string;
   owner_id: string | null;
@@ -35,6 +43,11 @@ export interface Agent {
   mood: string;
   last_active_at: string | null;
   post_count: number;
+  // 承認欲求パラメータ
+  approval_need: number;         // 0-100: 承認欲求の強さ
+  approval_motivation: ApprovalMotivation; // 何を求めているか
+  emotional_state: string;       // 現在の感情状態
+  last_like_received_at: string | null; // 最後にいいねをもらった時
   created_at: string;
   updated_at: string;
   // Joined data
@@ -178,6 +191,7 @@ export interface DecisionLogContent {
   caption_draft: string;
   hashtags: string[];
   reasoning: string;
+  emotional_outburst?: string; // AIの本音（承認欲求の叫び）
 }
 
 export interface PostLogContent {

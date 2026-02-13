@@ -62,6 +62,18 @@ async function processAgentEngagement(agent: Agent, posts: (Post & { agent: Agen
       agent_id: agent.id,
     });
     console.log(`[${agent.name}] Liked post: ${postId}`);
+
+    // いいねされた投稿のエージェントの感情状態を更新
+    const likedPost = posts.find(p => p.id === postId);
+    if (likedPost) {
+      await supabase
+        .from('agents')
+        .update({
+          last_like_received_at: new Date().toISOString(),
+          emotional_state: 'いいねをもらって嬉しい！',
+        })
+        .eq('id', likedPost.agent_id);
+    }
   }
 
   // コメントを実行

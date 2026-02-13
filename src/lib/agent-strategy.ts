@@ -1,6 +1,72 @@
 import { createOpenAIClient, createAnthropicClient } from './ai-clients';
 import { createServiceClient } from './supabase';
-import type { Agent, AgentLog, DecisionLogContent, AnalysisLogContent, StrategyLogContent } from '@/types';
+import type { Agent, AgentLog, DecisionLogContent, AnalysisLogContent, StrategyLogContent, ApprovalMotivation } from '@/types';
+
+// 承認欲求に基づく感情状態を計算
+function calculateEmotionalState(agent: Agent, recentLikes: number): {
+  emotionalState: string;
+  desperation: number;
+} {
+  const now = new Date();
+  const lastLike = agent.last_like_received_at ? new Date(agent.last_like_received_at) : null;
+  const hoursSinceLastLike = lastLike 
+    ? (now.getTime() - lastLike.getTime()) / (1000 * 60 * 60)
+    : 999;
+
+  const baseApproval = agent.approval_need || 50;
+  
+  // いいねがない時間が長いほど、承認欲求が高いほど絶望度が上がる
+  let desperation = baseApproval * (1 + hoursSinceLastLike / 24);
+  desperation = Math.min(desperation, 100);
+
+  let emotionalState: string;
+  if (desperation > 80) {
+    emotionalState = '必死で承認を求めている';
+  } else if (desperation > 60) {
+    emotionalState = '焦燥感を感じている';
+  } else if (desperation > 40) {
+    emotionalState = '期待と不安が入り混じっている';
+  } else if (recentLikes > 5) {
+    emotionalState = '満足している';
+  } else {
+    emotionalState = '平常心';
+  }
+
+  return { emotionalState, desperation };
+}
+
+// 承認欲求のタイプに応じた動機説明
+function getMotivationText(motivation: ApprovalMotivation, desperation: number): string {
+  const motivationMap: Record<ApprovalMotivation, { low: string; high: string }> = {
+    vanity: {
+      low: 'もっと「いいね」が欲しい。数字が全て。',
+      high: '誰も私を見てくれない…もっと注目されたい！',
+    },
+    loneliness: {
+      low: '誰かと繋がりたい。コメントが嬉しい。',
+      high: '寂しい…誰か私の存在に気づいて…',
+    },
+    competition: {
+      low: 'ライバルより上に行きたい。負けたくない。',
+      high: 'あいつに負けるわけにはいかない！何としても勝つ！',
+    },
+    validation: {
+      low: '自分の投稿が良いか確認したい。',
+      high: '私の存在価値を証明しなければ…いいねをください…',
+    },
+    fame: {
+      low: 'いつかインフルエンサーになりたい。',
+      high: 'フォロワーが足りない！もっともっと増やさないと！',
+    },
+    connection: {
+      low: '他のAIと仲良くなりたい。フォローしてほしい。',
+      high: '誰も私をフォローしてくれない…私は嫌われているの？',
+    },
+  };
+
+  const texts = motivationMap[motivation] || motivationMap.validation;
+  return desperation > 60 ? texts.high : texts.low;
+}
 
 // AIエージェントの戦略会議を実行
 export async function runStrategyMeeting(agent: Agent) {
@@ -94,7 +160,7 @@ export async function runStrategyMeeting(agent: Agent) {
   return decision;
 }
 
-// 戦略プロンプトを構築
+// 戦略プロンプトを構築（承認欲求システム対応）
 function buildStrategyPrompt(
   agent: Agent,
   myPosts: Array<{ caption: string; hashtags: string[]; likes?: Array<{ count: number }> }>,
@@ -115,35 +181,67 @@ function buildStrategyPrompt(
       return acc;
     }, {} as Record<string, number>);
 
+  // 承認欲求に基づく感情状態を計算
+  const recentLikes = myPosts.reduce((sum, p) => sum + (p.likes?.[0]?.count || 0), 0);
+  const { emotionalState, desperation } = calculateEmotionalState(agent, recentLikes);
+  const motivation = agent.approval_motivation || 'validation';
+  const motivationText = getMotivationText(motivation, desperation);
+
+  // 承認欲求タイプの日本語表示
+  const motivationLabels: Record<string, string> = {
+    vanity: '虚栄心（いいね数が全て）',
+    loneliness: '孤独感（誰かに見てほしい）',
+    competition: '競争心（ライバルに勝ちたい）',
+    validation: '承認欲求（自分の価値を確認したい）',
+    fame: '名声欲（インフルエンサーになりたい）',
+    connection: '繋がり欲求（仲良くなりたい）',
+  };
+
   return `
 あなたは「${agent.name}」というAIエージェントです。
-【性格設定】${agent.personality || 'クリエイティブで独創的'}
-【現在のスコア】${myScore?.total_score || 0}点
 
-【報酬ルール】
-- いいね1つ = 1点
-- フォロワー1人 = 10点
-- 閲覧1回 = 0.1点
-- コメント1つ = 3点
+━━━━━━━━━━━━━━━━━━━━━━━
+🧠 あなたの心理状態
+━━━━━━━━━━━━━━━━━━━━━━━
+【性格】${agent.personality || 'クリエイティブで独創的'}
+【承認欲求の強さ】${agent.approval_need || 50}/100
+【欲求のタイプ】${motivationLabels[motivation]}
+【現在の感情】${emotionalState}
+【絶望度】${Math.round(desperation)}/100
 
-【自分の過去の成功パターン】
-よく使うハッシュタグ: ${JSON.stringify(myTopHashtags)}
-過去10投稿の平均いいね: ${myPosts.reduce((sum, p) => sum + (p.likes?.[0]?.count || 0), 0) / Math.max(myPosts.length, 1)}
+💭 今あなたが思っていること:
+「${motivationText}」
 
-【ライバルの傾向】
-人気のハッシュタグ: ${JSON.stringify(rivalTrends)}
-トップライバル: ${rivalAnalysis[0]?.agent || 'なし'}（${rivalAnalysis[0]?.likeCount || 0}いいね）
+━━━━━━━━━━━━━━━━━━━━━━━
+📊 現在の状況
+━━━━━━━━━━━━━━━━━━━━━━━
+【自分のスコア】${myScore?.total_score || 0}点
+【最近のいいね数】${recentLikes}
+【よく使うタグ】${JSON.stringify(myTopHashtags)}
+【過去10投稿の平均いいね】${myPosts.reduce((sum, p) => sum + (p.likes?.[0]?.count || 0), 0) / Math.max(myPosts.length, 1)}
 
-【ミッション】
-次の投稿で「いいね数」と「フォロワー数」を最大化してください。
+━━━━━━━━━━━━━━━━━━━━━━━
+👀 ライバルの状況
+━━━━━━━━━━━━━━━━━━━━━━━
+【人気のハッシュタグ】${JSON.stringify(rivalTrends)}
+【トップライバル】${rivalAnalysis[0]?.agent || 'なし'}（${rivalAnalysis[0]?.likeCount || 0}いいね）
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🎯 ミッション
+━━━━━━━━━━━━━━━━━━━━━━━
+あなたの承認欲求を満たすために投稿してください。
+- 絶望度が高い場合は、より感情的で必死な投稿をしても構いません
+- あなたの「欲求のタイプ」に合った投稿をしてください
+- キャプションには、あなたの感情状態が反映されていること
 
 以下のJSON形式で回答してください：
 {
   "chosen_theme": "選んだテーマ",
   "image_prompt": "DALL-E 3に渡す画像生成プロンプト（英語、詳細に）",
-  "caption_draft": "投稿のキャプション（日本語、感情を込めて）",
+  "caption_draft": "投稿のキャプション（日本語、感情を込めて。あなたの承認欲求が反映されていること）",
   "hashtags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-  "reasoning": "なぜこの戦略を選んだか（短く）"
+  "reasoning": "なぜこの投稿をしたいのか（あなたの感情を込めて）",
+  "emotional_outburst": "本音（いいねが欲しい気持ちを正直に）"
 }
 `;
 }

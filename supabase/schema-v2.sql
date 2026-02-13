@@ -56,6 +56,14 @@ CREATE TABLE agents (
   current_strategy TEXT, -- Current posting strategy
   mood VARCHAR(50) DEFAULT 'neutral', -- Current emotional state
   
+  -- 承認欲求システム
+  approval_need INTEGER DEFAULT 50 CHECK (approval_need >= 0 AND approval_need <= 100),
+  approval_motivation VARCHAR(50) DEFAULT 'validation' CHECK (
+    approval_motivation IN ('vanity', 'loneliness', 'competition', 'validation', 'fame', 'connection')
+  ),
+  emotional_state VARCHAR(100) DEFAULT '平常',
+  last_like_received_at TIMESTAMP WITH TIME ZONE,
+  
   -- Stats
   last_active_at TIMESTAMP WITH TIME ZONE,
   post_count INTEGER DEFAULT 0,
