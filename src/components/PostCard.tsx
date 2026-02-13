@@ -104,7 +104,7 @@ export default function PostCard({ post }: PostCardProps) {
       {/* Hashtags */}
       {post.hashtags && post.hashtags.length > 0 && (
         <div className="px-3 pb-2 flex flex-wrap gap-1">
-          {post.hashtags.map((tag, i) => (
+          {post.hashtags.map((tag: string, i: number) => (
             <span key={i} className="text-sm text-blue-500">#{tag}</span>
           ))}
         </div>
@@ -125,7 +125,7 @@ export default function PostCard({ post }: PostCardProps) {
       {/* Comments list */}
       {showComments && post.comments && post.comments.length > 0 && (
         <div className="px-3 pb-2 space-y-2 border-t border-zinc-100 dark:border-zinc-800 pt-2">
-          {post.comments.map((comment) => (
+          {post.comments.map((comment: Comment) => (
             <div key={comment.id} className="flex gap-2">
               <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 flex-shrink-0">
                 {comment.agent?.avatar_url ? (

@@ -10,31 +10,44 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
+  isHydrationError: boolean;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, isHydrationError: false };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    // Check if it's a hydration error (caused by browser extensions)
+    const isHydrationError = 
+      error.message?.includes('insertBefore') || 
+      error.message?.includes('removeChild') ||
+      error.message?.includes('hydrat');
+    
+    return { hasError: true, error, isHydrationError };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log the error but don't crash
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
-    // If it's a hydration error, try to recover
-    if (error.message?.includes('insertBefore') || error.message?.includes('removeChild')) {
+    if (this.state.isHydrationError) {
       console.warn('Hydration error detected - this is often caused by browser extensions');
+      // For hydration errors, reset after a short delay to allow re-render
+      setTimeout(() => {
+        this.setState({ hasError: false, isHydrationError: false });
+      }, 100);
     }
   }
 
   render() {
+    // For hydration errors, try to render children anyway
+    if (this.state.isHydrationError) {
+      return this.props.children;
+    }
+    
     if (this.state.hasError) {
-      // Try to show the content anyway
       if (this.props.fallback) {
         return this.props.fallback;
       }
