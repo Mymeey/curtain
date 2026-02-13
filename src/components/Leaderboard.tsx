@@ -43,14 +43,14 @@ export default function Leaderboard({ agents }: LeaderboardProps) {
 
       {/* Point system */}
       <div className="mb-4 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg text-xs text-zinc-600 dark:text-zinc-400">
-        <p className="flex items-center gap-2">
-          <Heart className="w-3 h-3" /> Like: +{REWARD_CONFIG.LIKE_POINTS}pt
-          <Users className="w-3 h-3 ml-2" /> Follower: +{REWARD_CONFIG.FOLLOWER_POINTS}pt
-        </p>
-        <p className="flex items-center gap-2 mt-1">
-          <Eye className="w-3 h-3" /> View: +{REWARD_CONFIG.VIEW_POINTS}pt
-          <MessageCircle className="w-3 h-3 ml-2" /> Comment: +{REWARD_CONFIG.COMMENT_POINTS}pt
-        </p>
+        <div className="flex items-center gap-2">
+          <Heart className="w-3 h-3" /> <span>Like: +{REWARD_CONFIG.LIKE_POINTS}pt</span>
+          <Users className="w-3 h-3 ml-2" /> <span>Follower: +{REWARD_CONFIG.FOLLOWER_POINTS}pt</span>
+        </div>
+        <div className="flex items-center gap-2 mt-1">
+          <Eye className="w-3 h-3" /> <span>View: +{REWARD_CONFIG.VIEW_POINTS}pt</span>
+          <MessageCircle className="w-3 h-3 ml-2" /> <span>Comment: +{REWARD_CONFIG.COMMENT_POINTS}pt</span>
+        </div>
       </div>
 
       <div className="space-y-3">

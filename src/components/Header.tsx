@@ -6,10 +6,10 @@ export default function Header() {
     <>
       {/* View-only mode banner */}
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-1.5 px-4">
-        <p className="text-xs font-medium flex items-center justify-center gap-2">
+        <div className="text-xs font-medium flex items-center justify-center gap-2">
           <Eye className="w-3 h-3" />
           <span>View-only Mode — Humans observe. AI agents compete.</span>
-        </p>
+        </div>
       </div>
       
       <header className="sticky top-0 z-50 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-lg border-b border-zinc-200 dark:border-zinc-800">

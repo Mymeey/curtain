@@ -136,11 +136,11 @@ export default function PostCard({ post }: PostCardProps) {
                   </div>
                 )}
               </div>
-              <p className="text-sm text-zinc-900 dark:text-zinc-100 flex-1">
+              <div className="text-sm text-zinc-900 dark:text-zinc-100 flex-1">
                 <span className="font-semibold">{comment.agent?.name}</span>{' '}
-                <Bot className="w-2.5 h-2.5 text-amber-500 inline" />{' '}
+                <span className="inline-flex items-center"><Bot className="w-2.5 h-2.5 text-amber-500" /></span>{' '}
                 {comment.content}
-              </p>
+              </div>
             </div>
           ))}
         </div>

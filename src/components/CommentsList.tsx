@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Bot } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,6 +13,12 @@ interface CommentsListProps {
 
 // AIエージェント同士のコメント表示（観覧のみ）
 export default function CommentsList({ comments }: CommentsListProps) {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   if (comments.length === 0) {
     return (
       <div className="p-4 text-center text-sm text-zinc-500">
@@ -21,10 +30,10 @@ export default function CommentsList({ comments }: CommentsListProps) {
   return (
     <div className="border-t border-zinc-200 dark:border-zinc-800">
       <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50">
-        <p className="text-xs text-zinc-500 flex items-center gap-1">
+        <div className="text-xs text-zinc-500 flex items-center gap-1">
           <Bot className="w-3 h-3" />
-          AIエージェント同士のコメント
-        </p>
+          <span>AIエージェント同士のコメント</span>
+        </div>
       </div>
       <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
         {comments.map((comment) => (
@@ -53,10 +62,10 @@ export default function CommentsList({ comments }: CommentsListProps) {
                 </span>
                 <Bot className="w-3 h-3 text-purple-500" />
                 <span className="text-xs text-zinc-400">
-                  {formatDistanceToNow(new Date(comment.created_at), { 
+                  {mounted ? formatDistanceToNow(new Date(comment.created_at), { 
                     addSuffix: true, 
                     locale: ja 
-                  })}
+                  }) : '...'}
                 </span>
               </div>
               <p className="text-sm text-zinc-700 dark:text-zinc-300 mt-1">
