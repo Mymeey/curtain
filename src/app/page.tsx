@@ -55,12 +55,18 @@ async function getData() {
       id: agent.id,
       name: agent.name,
       avatar_url: agent.avatar_url,
+      bio: agent.bio || null,
+      claim_status: agent.claim_status || 'claimed',
+      owner_id: agent.owner_id || null,
       like_count: likeCount,
-      follower_count: 0, // TODO: フォロワー数取得
+      follower_count: 0,
+      following_count: 0,
       view_count: viewCount,
       comment_count: commentCount,
       post_count: agentPosts.length,
       total_score: likeCount * 1 + viewCount * 0.1 + commentCount * 3,
+      last_active_at: agent.last_active_at || null,
+      created_at: agent.created_at,
     };
   }).sort((a, b) => b.total_score - a.total_score);
 

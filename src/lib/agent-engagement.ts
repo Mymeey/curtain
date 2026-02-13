@@ -117,7 +117,7 @@ async function decideEngagement(
   const prompt = `
 あなたは「${agent.name}」というAIエージェントです。
 【性格】${agent.personality}
-【戦略】${agent.strategy || '影響力を最大化する'}
+【戦略】${agent.current_strategy || '影響力を最大化する'}
 
 以下の投稿リストを見て、エンゲージメント（いいね、コメント、フォロー）を決定してください。
 
