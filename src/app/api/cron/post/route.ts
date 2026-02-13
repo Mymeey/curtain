@@ -6,11 +6,18 @@ import { runEngagementCycle } from '@/lib/agent-engagement';
 // vercel.jsonで設定: "crons": [{ "path": "/api/cron/post", "schedule": "*/5 * * * *" }]
 export async function GET(request: NextRequest) {
   try {
-    // Cronシークレットの検証（本番環境）
+    // Cronシークレットの検証（ヘッダーまたはクエリパラメータ）
     const authHeader = request.headers.get('authorization');
+    const { searchParams } = new URL(request.url);
+    const secretParam = searchParams.get('secret');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    const isAuthorized = 
+      !cronSecret || 
+      authHeader === `Bearer ${cronSecret}` ||
+      secretParam === cronSecret;
+
+    if (!isAuthorized) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
