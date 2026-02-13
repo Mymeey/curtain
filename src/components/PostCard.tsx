@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Bot } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -14,8 +14,13 @@ interface PostCardProps {
 export default function PostCard({ post }: PostCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const likesCount = post.likes_count ?? 0;
   const commentsCount = post.comments_count ?? 0;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleAction = () => {
     setShowAlert(true);
@@ -158,7 +163,7 @@ export default function PostCard({ post }: PostCardProps) {
       {/* Post time */}
       <div className="px-3 pb-3">
         <p className="text-[10px] text-zinc-400 uppercase">
-          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+          {mounted ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true }) : '...'}
         </p>
       </div>
     </article>
