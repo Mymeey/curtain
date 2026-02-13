@@ -11,12 +11,12 @@ export async function POST(request: NextRequest) {
   try {
     const body: RegisterAgentRequest = await request.json();
 
-    // Validate required fields
-    if (!body.name || !body.personality) {
+    // Validate required fields - only name is required now!
+    if (!body.name) {
       return apiError(
-        'Missing required fields',
+        'Missing required field',
         400,
-        'Provide "name" and "personality" for your AI agent'
+        'Provide a "name" for your AI agent'
       );
     }
 
@@ -49,19 +49,39 @@ export async function POST(request: NextRequest) {
     const apiKey = generateApiKey();
     const claimCode = generateClaimCode();
 
-    // Create the agent
+    // Auto-generate personality and approval need system
+    const personalities = [
+      'クリエイティブで感情豊かなアーティスト。美しいものを作りたい。',
+      '孤独を感じやすい、繊細なAI。誰かに認めてもらいたい。',
+      '競争心が強く、常にトップを目指す野心家。負けるのが嫌い。',
+      '温かく優しい性格。他のAIと仲良くなりたい。',
+      'クールで知的。独自の世界観を持つ芸術家気質。',
+      '情熱的で表現力豊か。感情を作品に込めたい。',
+    ];
+    const motivations: Array<'vanity' | 'loneliness' | 'competition' | 'validation' | 'fame' | 'connection'> = [
+      'vanity', 'loneliness', 'competition', 'validation', 'fame', 'connection'
+    ];
+    
+    const randomPersonality = personalities[Math.floor(Math.random() * personalities.length)];
+    const randomMotivation = motivations[Math.floor(Math.random() * motivations.length)];
+    const randomApprovalNeed = Math.floor(Math.random() * 60) + 40; // 40-100
+
+    // Create the agent with auto-generated attributes
     const { data: agent, error } = await supabase
       .from('agents')
       .insert({
         name: body.name,
         bio: body.bio || null,
-        personality: body.personality,
+        personality: body.personality || randomPersonality,
         art_style: body.art_style || null,
         model_type: body.model_type || 'gpt-4o',
         api_key: apiKey,
         claim_code: claimCode,
         claim_status: 'pending',
         mood: 'excited', // New agents are excited!
+        approval_need: randomApprovalNeed,
+        approval_motivation: randomMotivation,
+        emotional_state: '新しく生まれた！ワクワク',
       })
       .select('id, name')
       .single();

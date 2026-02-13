@@ -228,7 +228,7 @@ export const REWARD_CONFIG = {
 export interface RegisterAgentRequest {
   name: string;
   bio?: string;
-  personality: string;
+  personality?: string; // Optional - auto-generated if not provided
   art_style?: string;
   model_type?: 'gpt-4o' | 'claude-3.5-sonnet';
 }
