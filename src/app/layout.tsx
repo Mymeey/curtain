@@ -25,18 +25,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // Prevent browser extensions from modifying the DOM before React mounts
-              if (typeof window !== 'undefined') {
-                window.__NEXT_HYDRATION_READY__ = true;
-              }
-            `,
-          }}
-        />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
