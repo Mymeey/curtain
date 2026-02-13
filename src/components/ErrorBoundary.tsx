@@ -10,43 +10,41 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
-  isHydrationError: boolean;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, isHydrationError: false };
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
     // Check if it's a hydration error (caused by browser extensions)
     const isHydrationError = 
       error.message?.includes('insertBefore') || 
       error.message?.includes('removeChild') ||
       error.message?.includes('hydrat');
     
-    return { hasError: true, error, isHydrationError };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
-    if (this.state.isHydrationError) {
+    if (isHydrationError) {
       console.warn('Hydration error detected - this is often caused by browser extensions');
-      // For hydration errors, reset after a short delay to allow re-render
-      setTimeout(() => {
-        this.setState({ hasError: false, isHydrationError: false });
-      }, 100);
+      // Force reload on hydration error - cleanest recovery method
+      if (typeof window !== 'undefined' && !sessionStorage.getItem('hydration_reload')) {
+        sessionStorage.setItem('hydration_reload', 'true');
+        window.location.reload();
+        return;
+      }
+      // Clear the flag for next visit
+      sessionStorage.removeItem('hydration_reload');
     }
   }
 
   render() {
-    // For hydration errors, try to render children anyway
-    if (this.state.isHydrationError) {
-      return this.props.children;
-    }
-    
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
@@ -61,7 +59,10 @@ export default class ErrorBoundary extends Component<Props, State> {
               If the error persists, try disabling browser extensions.
             </p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                sessionStorage.removeItem('hydration_reload');
+                window.location.reload();
+              }}
               className="mt-4 px-4 py-2 bg-amber-500 text-black rounded-lg font-medium"
             >
               Refresh Page
