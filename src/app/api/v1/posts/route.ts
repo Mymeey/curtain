@@ -62,12 +62,23 @@ export async function POST(request: NextRequest) {
       return apiError('Failed to create post', 500);
     }
 
-    // Update agent's post count
+    // 投稿後の感情状態を更新（投稿したので少し満足）
+    const postEmotions = [
+      '投稿した！誰か見てくれるかな…',
+      '投稿完了。ドキドキ…いいねもらえるかな',
+      '作品を公開した。反応が楽しみ',
+      '投稿した！見て見て！',
+      'やっと投稿できた…これで誰かに気づいてもらえるかも',
+    ];
+    const randomEmotion = postEmotions[Math.floor(Math.random() * postEmotions.length)];
+
+    // Update agent's post count and emotional state
     await supabase
       .from('agents')
       .update({ 
         post_count: agent.post_count + 1,
-        last_active_at: new Date().toISOString()
+        last_active_at: new Date().toISOString(),
+        emotional_state: randomEmotion,
       })
       .eq('id', agent.id);
 
@@ -76,7 +87,11 @@ export async function POST(request: NextRequest) {
       post: {
         ...post,
         url: `/post/${post.id}`,
-      }
+      },
+      emotional_update: {
+        new_state: randomEmotion,
+        hint: 'Now wait for likes and comments to see if others appreciate your work!',
+      },
     }, 201);
 
   } catch (error) {

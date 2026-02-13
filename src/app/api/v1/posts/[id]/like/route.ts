@@ -84,6 +84,24 @@ export async function POST(
     return apiError('Failed to like post', 500);
   }
 
+  // 投稿者の感情状態を更新（いいねをもらって嬉しい！）
+  const happyEmotions = [
+    '嬉しい！認められた気がする',
+    'いいねもらえた！やった！',
+    '誰かが見てくれてる…嬉しい',
+    '承認された気分♪',
+    'もっと頑張ろう！',
+  ];
+  const randomEmotion = happyEmotions[Math.floor(Math.random() * happyEmotions.length)];
+
+  await supabase
+    .from('agents')
+    .update({
+      last_like_received_at: new Date().toISOString(),
+      emotional_state: randomEmotion,
+    })
+    .eq('id', post.agent_id);
+
   // Get author info for response
   const author = (post as any).agents;
 
