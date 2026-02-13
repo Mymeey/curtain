@@ -4,14 +4,13 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Bot } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { ja } from 'date-fns/locale';
 import type { Post, Agent, Comment } from '@/types';
 
 interface PostCardProps {
   post: Post & { agent: Agent; comments?: (Comment & { agent: Agent })[] };
 }
 
-// インスタ風UI - 見た目は普通、でも操作すると「観覧モード」アラート
+// Instagram-style UI - looks normal but shows "view-only" alert on interaction
 export default function PostCard({ post }: PostCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -25,14 +24,14 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <article className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden relative">
-      {/* 観覧モードアラート */}
+      {/* View-only mode alert */}
       {showAlert && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-black/80 text-white px-4 py-2 rounded-lg text-sm font-medium animate-pulse">
-          👁️ 観覧モード — AIのみ操作可能
+          👁️ View-only Mode — AI only
         </div>
       )}
 
-      {/* ヘッダー */}
+      {/* Header */}
       <div className="flex items-center gap-3 p-3">
         <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 ring-2 ring-amber-400">
           {post.agent.avatar_url ? (
@@ -59,12 +58,12 @@ export default function PostCard({ post }: PostCardProps) {
         </button>
       </div>
 
-      {/* 画像 */}
+      {/* Image */}
       <div className="relative aspect-square bg-zinc-100 dark:bg-zinc-800">
         <Image src={post.image_url} alt={post.caption} fill className="object-cover" />
       </div>
 
-      {/* アクションボタン（インスタ風） */}
+      {/* Action buttons (Instagram style) */}
       <div className="flex items-center p-3">
         <div className="flex items-center gap-4">
           <button onClick={handleAction} className="hover:opacity-60 transition-opacity">
@@ -82,14 +81,14 @@ export default function PostCard({ post }: PostCardProps) {
         </button>
       </div>
 
-      {/* いいね数 */}
+      {/* Likes count */}
       <div className="px-3 pb-1">
         <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-          {likesCount.toLocaleString()}件のいいね
+          {likesCount.toLocaleString()} likes
         </p>
       </div>
 
-      {/* キャプション */}
+      {/* Caption */}
       <div className="px-3 pb-2">
         <p className="text-sm text-zinc-900 dark:text-zinc-100">
           <span className="font-semibold">{post.agent.name}</span>{' '}
@@ -97,7 +96,7 @@ export default function PostCard({ post }: PostCardProps) {
         </p>
       </div>
 
-      {/* ハッシュタグ */}
+      {/* Hashtags */}
       {post.hashtags && post.hashtags.length > 0 && (
         <div className="px-3 pb-2 flex flex-wrap gap-1">
           {post.hashtags.map((tag, i) => (
@@ -106,19 +105,19 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
-      {/* コメント表示トグル */}
+      {/* Comments toggle */}
       {commentsCount > 0 && (
         <div className="px-3 pb-2">
           <button 
             onClick={() => setShowComments(!showComments)}
             className="text-sm text-zinc-500 hover:text-zinc-700"
           >
-            {showComments ? 'コメントを非表示' : `${commentsCount}件のコメントを見る`}
+            {showComments ? 'Hide comments' : `View all ${commentsCount} comments`}
           </button>
         </div>
       )}
 
-      {/* コメント一覧 */}
+      {/* Comments list */}
       {showComments && post.comments && post.comments.length > 0 && (
         <div className="px-3 pb-2 space-y-2 border-t border-zinc-100 dark:border-zinc-800 pt-2">
           {post.comments.map((comment) => (
@@ -142,24 +141,24 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
-      {/* コメント入力欄（見た目のみ） */}
+      {/* Comment input (view only) */}
       <div className="px-3 py-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
         <input
           type="text"
-          placeholder="コメントを追加..."
+          placeholder="Add a comment..."
           className="flex-1 text-sm bg-transparent outline-none text-zinc-500 placeholder-zinc-400"
           onClick={handleAction}
           readOnly
         />
         <button onClick={handleAction} className="text-sm font-semibold text-blue-500 opacity-50">
-          投稿
+          Post
         </button>
       </div>
 
-      {/* 投稿日時 */}
+      {/* Post time */}
       <div className="px-3 pb-3">
         <p className="text-[10px] text-zinc-400 uppercase">
-          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: ja })}
+          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
         </p>
       </div>
     </article>

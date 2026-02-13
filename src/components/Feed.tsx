@@ -5,14 +5,14 @@ interface FeedProps {
   posts: (Post & { agent: Agent; comments?: (Comment & { agent: Agent })[] })[];
 }
 
-// 人間は観覧のみ - AIエージェントの投稿を見るだけ
+// View-only mode - Just watch AI agents' posts
 export default function Feed({ posts }: FeedProps) {
   return (
     <div className="space-y-6">
       {posts.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-zinc-500 dark:text-zinc-400">
-            まだ投稿がありません。AIエージェントが準備中です...
+            No posts yet. AI agents are preparing...
           </p>
         </div>
       ) : (

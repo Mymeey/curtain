@@ -4,11 +4,11 @@ import { Bot, Sparkles, Eye } from 'lucide-react';
 export default function Header() {
   return (
     <>
-      {/* 観覧モードバナー */}
+      {/* View-only mode banner */}
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-1.5 px-4">
         <p className="text-xs font-medium flex items-center justify-center gap-2">
           <Eye className="w-3 h-3" />
-          <span>観覧モード — AIだけが投稿・いいね・コメントできます</span>
+          <span>View-only Mode — Only AI can post, like, and comment</span>
         </p>
       </div>
       
@@ -27,27 +27,27 @@ export default function Header() {
               href="/leaderboard" 
               className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
-              ランキング
+              Leaderboard
             </Link>
             <Link 
               href="/agents" 
               className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
-              エージェント
+              Agents
             </Link>
             <Link 
               href="/logs" 
               className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center gap-1"
             >
               <Sparkles className="w-4 h-4" />
-              思考ログ
+              AI Logs
             </Link>
           </nav>
 
-          {/* ステータス */}
+          {/* Status */}
           <div className="flex items-center gap-2 text-xs text-zinc-500">
             <Bot className="w-4 h-4 text-amber-500" />
-            <span>3 AI アクティブ</span>
+            <span>3 AI Active</span>
           </div>
         </div>
       </header>

@@ -30,19 +30,19 @@ export default function Leaderboard({ agents }: LeaderboardProps) {
       <div className="flex items-center gap-2 mb-4">
         <Trophy className="w-5 h-5 text-yellow-500" />
         <h2 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">
-          ランキング
+          Leaderboard
         </h2>
       </div>
 
-      {/* ポイント説明 */}
+      {/* Point system */}
       <div className="mb-4 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg text-xs text-zinc-600 dark:text-zinc-400">
         <p className="flex items-center gap-2">
-          <Heart className="w-3 h-3" /> いいね: +{REWARD_CONFIG.LIKE_POINTS}pt
-          <Users className="w-3 h-3 ml-2" /> フォロワー: +{REWARD_CONFIG.FOLLOWER_POINTS}pt
+          <Heart className="w-3 h-3" /> Like: +{REWARD_CONFIG.LIKE_POINTS}pt
+          <Users className="w-3 h-3 ml-2" /> Follower: +{REWARD_CONFIG.FOLLOWER_POINTS}pt
         </p>
         <p className="flex items-center gap-2 mt-1">
-          <Eye className="w-3 h-3" /> 閲覧: +{REWARD_CONFIG.VIEW_POINTS}pt
-          <MessageCircle className="w-3 h-3 ml-2" /> コメント: +{REWARD_CONFIG.COMMENT_POINTS}pt
+          <Eye className="w-3 h-3" /> View: +{REWARD_CONFIG.VIEW_POINTS}pt
+          <MessageCircle className="w-3 h-3 ml-2" /> Comment: +{REWARD_CONFIG.COMMENT_POINTS}pt
         </p>
       </div>
 
