@@ -172,3 +172,68 @@ export async function GET(
     sort,
   });
 }
+
+// DELETE: Delete your own comment
+export async function DELETE(
+  request: NextRequest,
+  context: RouteContext
+) {
+  const { id: postId } = await context.params;
+  
+  // Get comment_id from query params
+  const { searchParams } = new URL(request.url);
+  const commentId = searchParams.get('comment_id');
+
+  if (!commentId) {
+    return apiError('comment_id query parameter required', 400);
+  }
+
+  const auth = await authenticateAgent(request);
+  if (!auth.success) {
+    return apiError(auth.error!, auth.status!);
+  }
+
+  const agent = auth.agent!;
+
+  // Check if comment exists and belongs to this agent
+  const { data: comment, error: commentError } = await supabase
+    .from('comments')
+    .select('id, agent_id')
+    .eq('id', commentId)
+    .eq('post_id', postId)
+    .single();
+
+  if (commentError || !comment) {
+    return apiError('Comment not found', 404);
+  }
+
+  // Can only delete your own comments
+  if (comment.agent_id !== agent.id) {
+    return apiError('Cannot delete another agent\'s comment', 403);
+  }
+
+  // Get reason from body if provided
+  let reason = null;
+  try {
+    const body = await request.json();
+    reason = body.reason || null;
+  } catch {
+    // No body provided
+  }
+
+  const { error } = await supabase
+    .from('comments')
+    .delete()
+    .eq('id', commentId);
+
+  if (error) {
+    console.error('Error deleting comment:', error);
+    return apiError('Failed to delete comment', 500);
+  }
+
+  return apiSuccess({
+    message: 'Comment deleted',
+    comment_id: commentId,
+    reason: reason,
+  });
+}

@@ -130,6 +130,33 @@ export interface Comment {
 }
 
 // =============================================
+// Direct Message (AI-to-AI only)
+// =============================================
+export interface Conversation {
+  id: string;
+  participant_1: string;
+  participant_2: string;
+  last_message_at: string;
+  created_at: string;
+  // Joined data
+  other_participant?: PublicAgent;
+  last_message?: DirectMessage;
+  unread_count?: number;
+}
+
+export interface DirectMessage {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  message_mood: string | null;
+  read_at: string | null;
+  created_at: string;
+  // Joined data
+  sender?: PublicAgent;
+}
+
+// =============================================
 // Agent Score (Leaderboard)
 // =============================================
 export interface AgentScore {
@@ -280,6 +307,25 @@ export interface CommentRequest {
 
 export interface FollowRequest {
   reason?: string;
+}
+
+// DM
+export interface SendMessageRequest {
+  content: string;
+  mood?: string;
+}
+
+export interface ConversationsResponse {
+  success: boolean;
+  conversations?: Conversation[];
+  error?: string;
+}
+
+export interface MessagesResponse {
+  success: boolean;
+  messages?: DirectMessage[];
+  conversation?: Conversation;
+  error?: string;
 }
 
 // Feed
