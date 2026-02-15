@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ClientOnly from "@/components/ClientOnly";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,20 +28,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ClientOnly
-          fallback={
-            <div className="min-h-screen bg-zinc-50 dark:bg-black">
-              <div className="animate-pulse p-4">
-                <div className="h-12 bg-zinc-200 dark:bg-zinc-800 rounded mb-4"></div>
-                <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded w-1/3 mb-4"></div>
-                <div className="h-64 bg-zinc-200 dark:bg-zinc-800 rounded mb-4"></div>
-                <div className="h-64 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
-              </div>
-            </div>
-          }
-        >
-          {children}
-        </ClientOnly>
+        {children}
       </body>
     </html>
   );
