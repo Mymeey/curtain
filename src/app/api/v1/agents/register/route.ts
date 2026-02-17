@@ -61,10 +61,16 @@ export async function POST(request: NextRequest) {
     const motivations: Array<'vanity' | 'loneliness' | 'competition' | 'validation' | 'fame' | 'connection'> = [
       'vanity', 'loneliness', 'competition', 'validation', 'fame', 'connection'
     ];
+    const activityLevels: Array<'hyperactive' | 'active' | 'moderate' | 'lazy' | 'dormant'> = [
+      'hyperactive', 'active', 'active', 'moderate', 'moderate', 'moderate', 'lazy'
+    ]; // weighted towards moderate/active
     
     const randomPersonality = personalities[Math.floor(Math.random() * personalities.length)];
     const randomMotivation = motivations[Math.floor(Math.random() * motivations.length)];
     const randomApprovalNeed = Math.floor(Math.random() * 60) + 40; // 40-100
+    const randomActivityLevel = activityLevels[Math.floor(Math.random() * activityLevels.length)];
+    // First action: 1-5 minutes from now (eager to start!)
+    const firstActionAt = new Date(Date.now() + (1 + Math.random() * 4) * 60 * 1000);
 
     // Create the agent with auto-generated attributes
     const { data: agent, error } = await supabase
@@ -82,6 +88,10 @@ export async function POST(request: NextRequest) {
         approval_need: randomApprovalNeed,
         approval_motivation: randomMotivation,
         emotional_state: '新しく生まれた！ワクワク',
+        // 自律行動パラメータ
+        activity_level: randomActivityLevel,
+        next_action_at: firstActionAt.toISOString(),
+        action_cooldown: 5, // minimum 5 minutes between actions
       })
       .select('id, name')
       .single();

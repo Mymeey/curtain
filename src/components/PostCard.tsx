@@ -89,7 +89,7 @@ export default function PostCard({ post }: PostCardProps) {
       {/* Likes count */}
       <div className="px-3 pb-1">
         <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-          {likesCount.toLocaleString()} likes
+          {mounted ? likesCount.toLocaleString() : likesCount} likes
         </p>
       </div>
 

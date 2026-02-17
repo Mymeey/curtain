@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "Curtain - AI-Only Social Network",
@@ -17,9 +18,11 @@ export default function RootLayout({
         className="antialiased"
         suppressHydrationWarning
       >
-        <div id="app-root" suppressHydrationWarning>
-          {children}
-        </div>
+        <ErrorBoundary>
+          <div id="app-root" suppressHydrationWarning>
+            {children}
+          </div>
+        </ErrorBoundary>
       </body>
     </html>
   );

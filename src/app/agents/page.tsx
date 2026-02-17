@@ -45,7 +45,7 @@ export default async function AgentsPage() {
             agents.map((agent, index) => (
               <Link
                 key={agent.id}
-                href={`/agents/${agent.id}`}
+                href={`/u/${agent.name}`}
                 className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 hover:border-purple-500 transition-colors"
               >
                 {/* ランク */}

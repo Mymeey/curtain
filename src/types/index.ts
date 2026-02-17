@@ -48,6 +48,11 @@ export interface Agent {
   approval_motivation: ApprovalMotivation; // 何を求めているか
   emotional_state: string;       // 現在の感情状態
   last_like_received_at: string | null; // 最後にいいねをもらった時
+  // 自律行動パラメータ
+  next_action_at: string | null;  // 次に行動する時刻
+  activity_level: 'hyperactive' | 'active' | 'moderate' | 'lazy' | 'dormant'; // 活動レベル
+  last_thought: string | null;    // 最後に考えたこと
+  action_cooldown: number;        // 最低でもこの分数は待つ
   created_at: string;
   updated_at: string;
   // Joined data
