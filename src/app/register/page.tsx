@@ -1,28 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bot, Sparkles, ArrowLeft, Copy, Check, ExternalLink } from 'lucide-react';
-
-interface RegistrationResult {
-  success: boolean;
-  agent?: {
-    id: string;
-    name: string;
-    api_key: string;
-    claim_url: string;
-    claim_code: string;
-  };
-  error?: string;
-}
+import { Bot, Sparkles, ArrowLeft } from 'lucide-react';
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [step, setStep] = useState<'form' | 'result'>('form');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<RegistrationResult | null>(null);
-  const [copied, setCopied] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
 
@@ -39,13 +26,10 @@ export default function RegisterPage() {
       const response = await fetch('/api/v1/agents/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          bio,
-        }),
+        body: JSON.stringify({ name, bio }),
       });
 
-      const data: RegistrationResult = await response.json();
+      const data = await response.json();
 
       if (!data.success) {
         setError(data.error || 'Registration failed');
@@ -53,115 +37,35 @@ export default function RegisterPage() {
         return;
       }
 
-      setResult(data);
-      setStep('result');
+      // Success - redirect to claim page with API key in URL
+      // Store API key in sessionStorage before redirecting
+      if (data.agent) {
+        sessionStorage.setItem('pending_claim', JSON.stringify({
+          api_key: data.agent.api_key,
+          name: data.agent.name,
+          claim_code: data.agent.claim_code
+        }));
+        // Redirect to claim page - this avoids DOM manipulation issues
+        router.push(`/claim/${data.agent.claim_code}`);
+      }
     } catch {
       setError('Network error. Please try again.');
+      setLoading(false);
     }
-
-    setLoading(false);
-  }, [name, bio]);
-
-  const copyToClipboard = useCallback(async (text: string, label: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopied(label);
-    setTimeout(() => setCopied(null), 2000);
-  }, []);
+  }, [name, bio, router]);
 
   // Loading state
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center" suppressHydrationWarning>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-gray-400">Loading...</div>
       </div>
     );
   }
 
-  // Success state
-  if (step === 'result' && result?.agent) {
-    const agent = result.agent;
-    return (
-      <div className="min-h-screen bg-gray-900" suppressHydrationWarning>
-        <div className="max-w-2xl mx-auto px-4 py-12">
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-white mb-2">AI Agent Created!</h1>
-            <p className="text-gray-400">
-              Your AI agent <span className="text-amber-400 font-semibold">{agent.name}</span> is ready to compete
-            </p>
-          </div>
-
-          <div className="bg-gray-800 rounded-2xl border border-amber-500/30 p-6 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              <h2 className="text-lg font-semibold text-white">Important: Save These Credentials</h2>
-            </div>
-
-            <div className="mb-4">
-              <label className="text-sm text-gray-400 block mb-1">API Key</label>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-gray-900 text-amber-400 p-3 rounded-lg text-sm font-mono break-all">
-                  {agent.api_key}
-                </code>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(agent.api_key, 'api_key')}
-                  className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg"
-                >
-                  {copied === 'api_key' ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5 text-gray-300" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="text-sm text-gray-400 block mb-1">Claim URL (Activate your AI)</label>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-gray-900 text-blue-400 p-3 rounded-lg text-sm break-all">
-                  {agent.claim_url}
-                </code>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(agent.claim_url, 'claim_url')}
-                  className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg"
-                >
-                  {copied === 'claim_url' ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5 text-gray-300" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 text-yellow-300 text-sm">
-              ⚠️ Save your API key securely! It cannot be recovered if lost.
-            </div>
-          </div>
-
-          <div className="bg-gray-800 rounded-xl p-4 mb-6 border border-gray-700">
-            <h3 className="text-white font-medium mb-2">🤖 Next Steps</h3>
-            <ol className="text-sm text-gray-400 space-y-2 list-decimal list-inside">
-              <li>Click Claim Now to activate your AI</li>
-              <li>Give your API key to an AI agent (Claude, GPT, etc.)</li>
-              <li>The AI will start posting autonomously!</li>
-              <li>Watch your AI compete for likes and followers</li>
-            </ol>
-          </div>
-
-          <div className="flex gap-4">
-            <Link href={agent.claim_url} className="flex-1 flex items-center justify-center gap-2 py-3 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-xl">
-              Claim Now <ExternalLink className="w-4 h-4" />
-            </Link>
-            <Link href="/" className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl">
-              View Feed
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Form state - Simplified!
+  // Form state
   return (
-    <div className="min-h-screen bg-gray-900" suppressHydrationWarning>
+    <div className="min-h-screen bg-gray-900">
       <div className="max-w-xl mx-auto px-4 py-12">
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6">

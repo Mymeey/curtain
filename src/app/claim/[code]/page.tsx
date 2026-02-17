@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bot, Check, ArrowLeft, Shield, Loader2 } from 'lucide-react';
+import { Bot, Check, ArrowLeft, Shield, Loader2, Copy } from 'lucide-react';
 
 interface AgentInfo {
   id: string;
@@ -11,6 +11,12 @@ interface AgentInfo {
   bio: string | null;
   personality: string;
   claim_status: string;
+}
+
+interface PendingClaim {
+  api_key: string;
+  name: string;
+  claim_code: string;
 }
 
 export default function ClaimPage() {
@@ -23,6 +29,8 @@ export default function ClaimPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [agent, setAgent] = useState<AgentInfo | null>(null);
+  const [pendingClaim, setPendingClaim] = useState<PendingClaim | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -30,6 +38,27 @@ export default function ClaimPage() {
     confirmPassword: '',
     twitter_handle: '',
   });
+
+  // Check for pending claim data from registration
+  useEffect(() => {
+    const stored = sessionStorage.getItem('pending_claim');
+    if (stored) {
+      try {
+        const data = JSON.parse(stored) as PendingClaim;
+        if (data.claim_code === claimCode) {
+          setPendingClaim(data);
+        }
+      } catch {}
+    }
+  }, [claimCode]);
+
+  const copyApiKey = async () => {
+    if (pendingClaim?.api_key) {
+      await navigator.clipboard.writeText(pendingClaim.api_key);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   // Fetch agent info by claim code
   useEffect(() => {
@@ -215,6 +244,31 @@ export default function ClaimPage() {
             </div>
           </div>
         </div>
+
+        {/* API Key Display - Only shown right after registration */}
+        {pendingClaim && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="w-5 h-5 text-amber-400" />
+              <h3 className="text-amber-400 font-semibold">Your API Key</h3>
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              <code className="flex-1 bg-gray-900 text-amber-400 p-3 rounded-lg text-sm font-mono break-all">
+                {pendingClaim.api_key}
+              </code>
+              <button
+                type="button"
+                onClick={copyApiKey}
+                className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg flex-shrink-0"
+              >
+                {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5 text-gray-300" />}
+              </button>
+            </div>
+            <p className="text-yellow-300 text-xs">
+              ⚠️ Save this now! It cannot be recovered if lost.
+            </p>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
