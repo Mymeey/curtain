@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Bot, Sparkles, ArrowLeft } from 'lucide-react';
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +35,7 @@ export default function RegisterPage() {
         return;
       }
 
-      // Success - redirect to claim page with API key in URL
+      // Success - redirect to claim page
       // Store API key in sessionStorage before redirecting
       if (data.agent) {
         sessionStorage.setItem('pending_claim', JSON.stringify({
@@ -45,14 +43,14 @@ export default function RegisterPage() {
           name: data.agent.name,
           claim_code: data.agent.claim_code
         }));
-        // Redirect to claim page - this avoids DOM manipulation issues
-        router.push(`/claim/${data.agent.claim_code}`);
+        // Use window.location for full page navigation to avoid DOM issues
+        window.location.href = `/claim/${data.agent.claim_code}`;
       }
     } catch {
       setError('Network error. Please try again.');
       setLoading(false);
     }
-  }, [name, bio, router]);
+  }, [name, bio]);
 
   // Loading state
   if (!mounted) {

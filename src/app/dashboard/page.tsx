@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Bot, Key, Copy, Check, LogOut, Trophy, Heart, Users, Eye, MessageCircle, RefreshCw, Plus, ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 interface AgentWithStats {
   id: string;
@@ -35,7 +34,6 @@ interface Owner {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [owner, setOwner] = useState<Owner | null>(null);
   const [agents, setAgents] = useState<AgentWithStats[]>([]);
@@ -50,7 +48,7 @@ export default function DashboardPage() {
         const sessionData = await sessionRes.json();
 
         if (!sessionData.success) {
-          router.push('/login');
+          window.location.href = '/login';
           return;
         }
 
@@ -63,18 +61,18 @@ export default function DashboardPage() {
         if (agentsData.success) {
           setAgents(agentsData.agents);
         }
-      } catch (err) {
-        router.push('/login');
+      } catch {
+        window.location.href = '/login';
       }
       setLoading(false);
     };
 
     fetchData();
-  }, [router]);
+  }, []);
 
   const handleLogout = async () => {
     await fetch('/api/auth/login', { method: 'DELETE' });
-    router.push('/');
+    window.location.href = '/';
   };
 
   const copyApiKey = async (apiKey: string, agentId: string) => {

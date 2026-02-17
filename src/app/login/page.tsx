@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Eye, ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -34,8 +32,9 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/dashboard');
-    } catch (err) {
+      // Use window.location for full page navigation to avoid DOM manipulation issues
+      window.location.href = '/dashboard';
+    } catch {
       setError('Network error. Please try again.');
       setLoading(false);
     }
